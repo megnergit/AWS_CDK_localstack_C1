@@ -314,6 +314,7 @@ root@acf412775d98:/aws# a s3api list-buckets
 }
 ```
 
+All right, we do not have any S3 yet. That is correct. 
 The first bucket is the one that we created at bootstrapping. 
 
 Let us deploy empty stack. 
@@ -338,9 +339,7 @@ arn:aws:cloudformation:xxxxxxxx:000000000000:stack/AwsStack/xxxxxxxx
 root@acf412775d98:/aws#
 ```
 
-
-
-Let us check if the resourcesl
+Let us check if there is any resources (there should not).
 
 ```
 root@acf412775d98:/aws# c deploy
