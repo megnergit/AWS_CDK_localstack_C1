@@ -192,18 +192,18 @@ Then initialize the project.
 ```
 root@acf412775d98:/aws# c init --language typescript
 ```
-```c``` is aliased to ```cdklocal``` in the previous section.
-Other languages one can use are
+
+
+Note that ```c``` is aliased to ```cdklocal``` in the previous section. Other languages one can use are
+
 
 ```
 > c init help
-
 ....
- -l, --language           The language to be used for the new project (default
-                           can be configured in ~/.cdk.json)
-    [string] [choices: "csharp", "fsharp", "go", "java", "javascript", "python",
-                                                                   "typescript"]
-                                                                   ```
+ -l, --language The language to be used for the new project (default can be configured in ~/.cdk.json)
+    [string] [choices: "csharp", "fsharp", "go", "java", "javascript", "python", "typscript"]
+
+```
 
 Now we should see the following directories created in our working directory. 
 
