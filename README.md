@@ -582,5 +582,17 @@ All right.
 I will put only ```./lib/aws-stack.ts``` in the repository. 
 All the else will be created automatically when you run ```cdklocal init```.
 
+<!--==============================================-->
+## Clean up
+
+When done, just stop whole container.
+
+```
+docker stop acf
+
+```
+
+
+
 ------
 # END
