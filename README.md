@@ -251,7 +251,10 @@ root@acf412775d98:/aws/lib# ls
 aws-stack.ts
 ```
 
-oot@acf412775d98:/aws/lib# \cat aws-stack.ts
+We shall look at the default ```aws-stack.ts```.
+
+```
+root@acf412775d98:/aws/lib# \cat aws-stack.ts
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3'
