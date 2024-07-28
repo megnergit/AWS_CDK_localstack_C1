@@ -176,14 +176,105 @@ All right. Next we will work with cdk inside localstack
 <!--==============================================-->
 ## CDK in localstack 
 
+### Prepare project
+
 We will initialize the project, but first get into our 
 working directory.
 
 ```
-root@acf412775d98:/cd
-aws# ls
+root@acf412775d98:~# cd /aws
+root@acf412775d98:/aws# ls
 ```
 This must be an empty directory. 
+
+Then initialize the project.
+
+```
+root@acf412775d98:/aws# c init --language typescript
+```
+```c``` is aliased to ```cdklocal``` in the previous section.
+Other languages one can use are
+
+```
+> c init help
+
+....
+ -l, --language           The language to be used for the new project (default
+                           can be configured in ~/.cdk.json)
+    [string] [choices: "csharp", "fsharp", "go", "java", "javascript", "python",
+                                                                   "typescript"]
+                                                                   ```
+
+Now we should see the following directories created in our working directory. 
+
+```
+root@acf412775d98:/aws# ls -ltr
+total 176
+-rw-r--r--   1 root root    536 Jul 28 14:14 README.md
+drwxr-xr-x   3 root root     96 Jul 28 14:14 bin
+-rw-r--r--   1 root root    157 Jul 28 14:14 jest.config.js
+drwxr-xr-x   3 root root     96 Jul 28 14:14 lib
+drwxr-xr-x   3 root root     96 Jul 28 14:14 test
+-rw-r--r--   1 root root    663 Jul 28 14:14 tsconfig.json
+-rw-r--r--   1 root root   3490 Jul 28 14:14 cdk.json
+-rw-r--r--   1 root root    518 Jul 28 14:14 package.json
+-rw-r--r--   1 root root 157433 Jul 28 14:15 package-lock.json
+drwxr-xr-x 224 root root   7168 Jul 28 14:15 node_modules
+drwxr-xr-x   7 root root    224 Jul 28 14:27 cdk.out
+```
+
+### Start writing .ts file
+
+The important files are 
+
+* ```bin/aws.ts``` and 
+* ```lib/aws-stack.ts```
+
+The ```aws.ts``` defines an __app__. app repreents the whole project. ```aws.ts``` calls ```aws-stack.ts```. ```aws-stacks.ts``` defines what resources we will deploy and how. So, let us work now with ```aws-stack.ts```.
+
+```
+root@acf412775d98:/aws/lib# ls
+aws-stack.ts
+```
+
+oot@acf412775d98:/aws/lib# \cat aws-stack.ts
+import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as s3 from 'aws-cdk-lib/aws-s3'
+// import * as sqs from 'aws-cdk-lib/aws-sqs';
+
+export class AwsStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // The code that defines your stack goes here
+
+    // example resource
+    // const queue = new sqs.Queue(this, 'AwsQueue', {
+    //   visibilityTimeout: cdk.Duration.seconds(300)
+    // });
+
+  }
+}
+
+```
+
+The details about ```cdk``` syntax should be found elsewhere. 
+Here only one thing: __do not change the stack name__ ```AwsStack```. This is the 
+name that __app__ calls the stack (check ```./bin/aws.ts```). 
+If you change ```AwsStack```, __app__ will get lost what to call. 
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
