@@ -8,7 +8,7 @@ to understand how AWS cdk works.
 
 In order to do so, I need to practice cdk as many times as possible.
 In order to do so, I need a safe environment that would not get charged (= zero cost).
-Then let us start with __localstack_-, in a _containered_ environment so that we can
+Then let us start with __localstack__, in a __containered__ environment so that we can
 delete the environment clean, once we are done. 
 
 
@@ -123,7 +123,7 @@ This will
 
 Check if the localstack container is running.
 ```
-docker ps
+> docker ps
 CONTAINER ID   IMAGE                   COMMAND                  CREATED       STATUS                 PORTS                                                                    NAMES
 acf412775d98   localstack/localstack   "docker-entrypoint.sh"   2 hours ago   Up 2 hours (healthy)   127.0.0.1:4510-4559->4510-4559/tcp, 127.0.0.1:4566->4566/tcp, 5678/tcp   busy_cannon
 
@@ -171,7 +171,22 @@ Default region name [xxxxxxxxx]:
 Default output format [None]:
 ```
 
-All right. 
+All right. Next we will work with cdk inside localstack
+
+<!--==============================================-->
+## CDK in localstack 
+
+We will initialize the project, but first get into our 
+working directory.
+
+```
+root@acf412775d98:/cd
+aws# ls
+```
+This must be an empty directory. 
+
+
+
 
 
 
