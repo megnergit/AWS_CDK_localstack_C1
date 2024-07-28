@@ -2,9 +2,9 @@
 
 <!--==============================================-->
 
-## Goal is 
+## Goal
 
-to understand how AWS cdk works.
+... is to understand how AWS cdk works.
 
 In order to do so, I need to practice cdk as many times as possible.
 In order to do so, I need a safe environment that would not get charged (= zero cost).
@@ -105,7 +105,7 @@ the command only works when the directory is empty).
 Start ```docker run ``` from there.
 
 ```
-meg@elias ~/aws/cdk]$ docker run \
+>  docker run \
   --rm -it -d \
   -p 127.0.0.1:4566:4566 \
   -p 127.0.0.1:4510-4559:4510-4559 \
@@ -223,7 +223,21 @@ drwxr-xr-x 224 root root   7168 Jul 28 14:15 node_modules
 drwxr-xr-x   7 root root    224 Jul 28 14:27 cdk.out
 ```
 
-### Start writing .ts file
+Next we will do __bootstrap__. 
+This step do 3 things. 
+
+1. create an S3 bucket to store cdk files
+2. create ESR repository
+3. create IAM roles
+
+I thought it will create a cloudfront instance, but no explanation included in the [official page](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html). 
+
+__We do not create those resources actually on AWS.__
+Here is the beauty of localstack. Localstack mocks as if 
+those resources are created. 
+
+
+### Edit .ts file
 
 The important files are 
 
@@ -265,30 +279,306 @@ name that __app__ calls the stack (check ```./bin/aws.ts```).
 If you change ```AwsStack```, __app__ will get lost what to call. 
 
 
+### Play with cdk
+
+Let us check a few things. 
+Run the commands everytime at the working directory ```/aws```.
+
+First check if we have a stack.
+```
+root@acf412775d98:/aws# c ls
+`cdk synth` may hang in Docker on Linux 5.6-5.10. See https://github.com/aws/aws-cdk/issues/21379 for workarounds.
+AwsStack
+```
+
+Yes, we have ```AwsStack``` already there. 
+
+Next check if we have s3 resources (to be created in the next steps).
+
+```
+root@acf412775d98:/aws# a s3api list-buckets
+{
+    "Buckets": [
+        {
+            "Name": "cdk-xxxxxxxxxxx"
+            "CreationDate": "2024-07-28T14:16:14.000Z"
+        }
+    ],
+    "Owner": {
+        "DisplayName": "webfile",
+        "ID": "xxxxxxxxdx"
+    }
+}
+```
+
+The first bucket is the one that we created at bootstrapping. 
+
+Let us deploy empty stack. 
+```
+root@acf412775d98:/aws# c deploy
+`cdk synth` may hang in Docker on Linux 5.6-5.10. See https://github.com/aws/aws-cdk/issues/21379 for workarounds.
+
+✨  Synthesis time: 10.9s
+
+AwsStack: deploying... [1/1]
+
+ ✅  AwsStack (no changes)
+
+✨  Deployment time: 0.02s
+
+Stack ARN:
+arn:aws:cloudformation:xxxxxxxx:000000000000:stack/AwsStack/xxxxxxxx
+
+✨  Total time: 10.92s
+
+
+root@acf412775d98:/aws#
+```
 
 
 
+Let us check if the resourcesl
+
+```
+root@acf412775d98:/aws# c deploy
+`cdk synth` may hang in Docker on Linux 5.6-5.10. See https://github.com/aws/aws-cdk/issues/21379 for workarounds.
+
+✨  Synthesis time: 10.9s
+
+AwsStack: deploying... [1/1]
+
+ ✅  AwsStack (no changes)
+
+✨  Deployment time: 0.02s
+
+Stack ARN:
+arn:aws:cloudformation:eu-central-1:000000000000:stack/AwsStack/a5901e24
+
+✨  Total time: 10.92s
+```
+
+Check the resources, 
+```
+root@acf412775d98:/aws# a cloudformation list-stack-resources --stack-name AwsStack
+{
+    "StackResourceSummaries": [
+        {
+            "LogicalResourceId": "CDKMetadata",
+            "PhysicalResourceId": "AwsStack-CDKMetadata-c29623e9",
+            "ResourceType": "AWS::CDK::Metadata",
+            "LastUpdatedTimestamp": "2024-07-28T14:27:39.474000Z",
+            "ResourceStatus": "UPDATE_COMPLETE",
+            "DriftInformation": {
+                "StackResourceDriftStatus": "NOT_CHECKED"
+            }
+        }
+    ]
+}
+root@acf412775d98:/aws#
+```
+
+All right, still no resources deployed except stack itself. 
 
 
+### Now deploy S3 bucket
+
+Add s3 __construct__ as follows. 
+```
+root@acf412775d98:/aws# \cat lib/aws-stack.ts
+import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as s3 from 'aws-cdk-lib/aws-s3'
+// import * as sqs from 'aws-cdk-lib/aws-sqs';
+
+export class AwsStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // The code that defines your stack goes here
+
+    // example resource
+    // const queue = new sqs.Queue(this, 'AwsQueue', {
+    //   visibilityTimeout: cdk.Duration.seconds(300)
+    // });
+
+// FROM HERE
+    const mys3 = new s3.Bucket(this, 'FirstBucket', {
+      bucketName: 'firstbucket-28418'
+    }) ;
+
+// TO HERE
+
+  }
+}
+```
+(Note: because we mounted the working directory to the container, we can edit the file from outside the container.)
+
+Then deploy it.
+```
+root@acf412775d98:/aws# c deploy
+`cdk synth` may hang in Docker on Linux 5.6-5.10. See https://github.com/aws/aws-cdk/issues/21379 for workarounds.
+
+✨  Synthesis time: 9.57s
+
+AwsStack: deploying... [1/1]
+AwsStack: creating CloudFormation changeset...
+
+ ✅  AwsStack
+
+✨  Deployment time: 5.07s
+
+Stack ARN:
+arn:aws:cloudformation:eu-central-1:000000000000:stack/AwsStack/xxxxxxxx
+
+✨  Total time: 14.64s
+
+root@acf412775d98:/aws#
+```
+
+All right. Let us check if the S3 resource is there.
+
+```
+root@acf412775d98:/aws# a s3api list-buckets
+{
+    "Buckets": [
+        {
+            "Name": "cdk-hnb659fds-assets-000000000000-eu-central-1",
+            "CreationDate": "2024-07-28T14:16:14.000Z"
+        },
+        {
+            "Name": "firstbucket-28418",
+            "CreationDate": "2024-07-28T16:53:53.000Z"
+        }
+    ],
+    "Owner": {
+        "DisplayName": "webfile",
+        "ID": "xxxxxxxxxxxxxx"
+    }
+}
+```
+
+Yes, now 'firstbucket-28418' is there. Check cloudformation as well. 
+
+```
+root@acf412775d98:/aws# a cloudformation list-stack-resources --stack-name AwsStack
+{
+    "StackResourceSummaries": [
+        {
+            "LogicalResourceId": "CDKMetadata",
+            "PhysicalResourceId": "AwsStack-CDKMetadata-c29623e9",
+            "ResourceType": "AWS::CDK::Metadata",
+            "LastUpdatedTimestamp": "2024-07-28T16:53:53.215000Z",
+            "ResourceStatus": "UPDATE_COMPLETE",
+            "DriftInformation": {
+                "StackResourceDriftStatus": "NOT_CHECKED"
+            }
+        },
+        {
+            "LogicalResourceId": "FirstBucket8E7B2622",
+            "PhysicalResourceId": "firstbucket-28418",
+            "ResourceType": "AWS::S3::Bucket",
+            "LastUpdatedTimestamp": "2024-07-28T16:53:53.238000Z",
+            "ResourceStatus": "CREATE_COMPLETE",
+            "DriftInformation": {
+                "StackResourceDriftStatus": "NOT_CHECKED"
+            }
+        }
+    ]
+}
+```
+
+Yes, S3 bucket is registered to cloudformation as well. 
+
+### Delete resource
+
+In order to delete resource, we do __not__ destroy them, but __deploy empty stack__. 
+
+So, remove S3 part from ```./lib/aws-stack.ts```.
+```
+root@acf412775d98:/aws# cat lib/aws-stack.ts
+import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as s3 from 'aws-cdk-lib/aws-s3'
+// import * as sqs from 'aws-cdk-lib/aws-sqs';
+
+export class AwsStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // The code that defines your stack goes here
+
+    // example resource
+    // const queue = new sqs.Queue(this, 'AwsQueue', {
+    //   visibilityTimeout: cdk.Duration.seconds(300)
+    // });
+
+    /* LIKE THIS
+    const mys3 = new s3.Bucket(this, 'FirstBucket', {
+      bucketName: 'firstbucket-28418',
+      versioned: false
+    }) ;
+   */
+
+  }
+}
+```
+
+Before deploying it, let us see what will happen
+
+```
+root@acf412775d98:/aws# c diff
+`cdk synth` may hang in Docker on Linux 5.6-5.10. See https://github.com/aws/aws-cdk/issues/21379 for workarounds.
+Stack AwsStack
+Hold on while we create a read-only change set to get a diff with accurate replacement information (use --no-change-set to use a less accurate but faster template-only diff)
+Could not create a change set, will base the diff on template differences (run again with -v to see the reason)
+Resources
+[-] AWS::S3::Bucket FirstBucket FirstBucket8E7B2622 orphan
 
 
+✨  Number of stacks with differences: 1
 
+```
 
+cdk is saying that it will remove one S3 buekct.
 
+Then we will actually delete it by deploying empty stack.
 
+```
+root@acf412775d98:/aws# c deploy
+`cdk synth` may hang in Docker on Linux 5.6-5.10. See https://github.com/aws/aws-cdk/issues/21379 for workarounds.
 
+✨  Synthesis time: 9.38s
 
+AwsStack: deploying... [1/1]
+AwsStack: creating CloudFormation changeset...
 
+ ✅  AwsStack
 
+✨  Deployment time: 5.11s
 
+Stack ARN:
+arn:aws:cloudformation:eu-central-1:000000000000:stack/AwsStack/a5901e24
 
+✨  Total time: 14.49s
 
+```
 
+Check ```s3api``` and ```cloudformation```.
 
+```
+> a s3api list-buckets
+....
 
+> a cloudformation list-stack-resources --stack-name AwsStack
+```
 
+All right. 
 
+<!--==============================================-->
+## Files 
 
+I will put only ```./lib/aws-stack.ts``` in the repository. 
+All the else will be created automatically when you run ```cdklocal init```.
 
 ------
 # END
